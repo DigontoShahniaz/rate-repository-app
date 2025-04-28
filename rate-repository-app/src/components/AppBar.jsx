@@ -1,41 +1,83 @@
-import { View, StyleSheet, Pressable, ScrollView } from 'react-native';
-import { Link } from 'react-router-native';
-import Text from './Text';
+import { View, ScrollView, StyleSheet } from 'react-native';
 import Constants from 'expo-constants';
+import { Link } from 'react-router-native';
+import { useQuery, useApolloClient } from '@apollo/client';
+
 import theme from '../theme';
+import Text from './Text';
+import { ME } from '../graphql/queries';
+import useAuthStorage from '../hooks/useAuthStorage';
 
 const styles = StyleSheet.create({
   container: {
     paddingTop: Constants.statusBarHeight,
-    backgroundColor: theme.colors.appBarBackground || '#24292e',
-    padding: 10,
+    backgroundColor: theme.colors.appBarBackground,
   },
   scrollView: {
     flexDirection: 'row',
-    gap: 15,
   },
-  tab: {
+  tabTouchable: {
+    flexGrow: 0,
+  },
+  tabContainer: {
+    paddingHorizontal: 15,
+    paddingVertical: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabText: {
     color: 'white',
-    fontWeight: theme.fontWeights.bold,
-    fontSize: theme.fontSizes.subheading,
   },
 });
 
-const AppBarTab = ({ children, to }) => {
+const AppBarTab = ({ children, onPress, ...props }) => {
+  if (onPress) {
+    return (
+      <Text 
+        fontWeight="bold" 
+        style={[styles.tabText, styles.tabContainer]}
+        onPress={onPress}
+      >
+        {children}
+      </Text>
+    );
+  }
+
   return (
-    <Link to={to} component={Pressable}>
-      <Text style={styles.tab}>{children}</Text>
+    <Link style={styles.tabTouchable} {...props}>
+      <View style={styles.tabContainer}>
+        <Text fontWeight="bold" style={styles.tabText}>
+          {children}
+        </Text>
+      </View>
     </Link>
   );
 };
 
 const AppBar = () => {
+  const authStorage = useAuthStorage();
+  const apolloClient = useApolloClient();
+  const { data } = useQuery(ME);
+  const currentUser = data?.me;
+
+  const signOut = async () => {
+    // Remove the access token from storage
+    await authStorage.removeAccessToken();
+    
+    // Reset Apollo Client store to clear cache and re-execute queries
+    apolloClient.resetStore();
+  };
+
   return (
     <View style={styles.container}>
-      <ScrollView horizontal contentContainerStyle={styles.scrollView}>
+      <ScrollView style={styles.scrollView} horizontal>
         <AppBarTab to="/">Repositories</AppBarTab>
-        <AppBarTab to="/signin">Sign in</AppBarTab>
-        {/* Add more tabs here to test scrolling */}
+        {currentUser ? (
+          <AppBarTab onPress={signOut}>Sign out</AppBarTab>
+        ) : (
+          <AppBarTab to="/sign-in">Sign in</AppBarTab>
+        )}
       </ScrollView>
     </View>
   );

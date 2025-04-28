@@ -1,104 +1,71 @@
-import { View, StyleSheet, TextInput, Pressable } from 'react-native';
-import { useFormik } from 'formik';
+import React from 'react';
+import { View, StyleSheet, Pressable } from 'react-native';
+import { Formik } from 'formik';
 import * as yup from 'yup';
+
 import Text from './Text';
+import FormikTextInput from './FormikTextInput';
 import theme from '../theme';
+import useSignIn from '../hooks/useSignIn';
 
 const styles = StyleSheet.create({
   container: {
-    padding: 15,
     backgroundColor: 'white',
-  },
-  input: {
-    height: 40,
-    marginVertical: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: theme.colors.textSecondary,
-    borderRadius: 5,
-  },
-  errorInput: {
-    borderColor: '#d73a4a', // Red border for errors
+    padding: 15,
   },
   button: {
-    marginTop: 10,
-    padding: 10,
     backgroundColor: theme.colors.primary,
-    borderRadius: 5,
-    alignItems: 'center',
+    borderRadius: theme.roundness,
+    padding: 15,
+    textAlign: 'center',
+    marginTop: 10,
   },
   buttonText: {
     color: 'white',
-    fontWeight: theme.fontWeights.bold,
-  },
-  errorText: {
-    color: '#d73a4a', // Red error text
-    marginBottom: 5,
-    fontSize: theme.fontSizes.body,
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 });
 
 const validationSchema = yup.object().shape({
-  username: yup
-    .string()
-    .required('Username is required'),
-  password: yup
-    .string()
-    .required('Password is required'),
+  username: yup.string().required('Username is required'),
+  password: yup.string().required('Password is required'),
 });
 
-const SignIn = () => {
-  const onSubmit = (values) => {
-    console.log(values);
-  };
-
-  const formik = useFormik({
-    initialValues: {
-      username: '',
-      password: '',
-    },
-    validationSchema,
-    onSubmit,
-  });
-
-  const isFieldInvalid = (field) => 
-    formik.touched[field] && formik.errors[field];
-
+const SignInForm = ({ onSubmit }) => {
   return (
     <View style={styles.container}>
-      <TextInput
-        style={[
-          styles.input,
-          isFieldInvalid('username') && styles.errorInput,
-        ]}
-        placeholder="Username"
-        value={formik.values.username}
-        onChangeText={formik.handleChange('username')}
-        onBlur={formik.handleBlur('username')}
-      />
-      {isFieldInvalid('username') && (
-        <Text style={styles.errorText}>{formik.errors.username}</Text>
-      )}
-
-      <TextInput
-        style={[
-          styles.input,
-          isFieldInvalid('password') && styles.errorInput,
-        ]}
-        placeholder="Password"
-        value={formik.values.password}
-        onChangeText={formik.handleChange('password')}
-        onBlur={formik.handleBlur('password')}
-        secureTextEntry
-      />
-      {isFieldInvalid('password') && (
-        <Text style={styles.errorText}>{formik.errors.password}</Text>
-      )}
-
-      <Pressable style={styles.button} onPress={formik.handleSubmit}>
+      <FormikTextInput name="username" placeholder="Username" />
+      <FormikTextInput name="password" placeholder="Password" secureTextEntry />
+      <Pressable onPress={onSubmit} style={styles.button}>
         <Text style={styles.buttonText}>Sign in</Text>
       </Pressable>
     </View>
+  );
+};
+
+const SignIn = () => {
+  const [signIn] = useSignIn();
+
+  const onSubmit = async (values) => {
+    const { username, password } = values;
+
+    try {
+      const { data } = await signIn({ username, password });
+      console.log(data);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  return (
+    <Formik
+      initialValues={{ username: '', password: '' }}
+      onSubmit={onSubmit}
+      validationSchema={validationSchema}
+    >
+      {({ handleSubmit }) => <SignInForm onSubmit={handleSubmit} />}
+    </Formik>
   );
 };
 
