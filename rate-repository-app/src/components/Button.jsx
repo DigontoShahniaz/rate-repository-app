@@ -1,7 +1,3 @@
-import { Pressable, View, StyleSheet } from 'react-native';
-
-import Text from './Text';
-import theme from '../theme';
 
 const styles = StyleSheet.create({
   container: {
@@ -10,26 +6,31 @@ const styles = StyleSheet.create({
     minWidth: 64,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
     borderRadius: theme.roundness,
+  },
+  primary: {
+    backgroundColor: theme.colors.primary,
+  },
+  error: {
+    backgroundColor: theme.colors.error,
   },
   text: {
     color: 'white',
   },
 });
 
-const Button = ({ children, style, ...props }) => {
-  const buttonStyle = [styles.container, style];
+const Button = ({ children, style, color = 'primary', ...props }) => {
+  const buttonStyle = [
+    styles.container,
+    styles[color],
+    style,
+  ];
 
   return (
     <Pressable {...props}>
       <View style={buttonStyle}>
-        <Text style={styles.text} fontWeight="bold">
-          {children}
-        </Text>
+        <Text style={styles.text} fontWeight="bold">{children}</Text>
       </View>
     </Pressable>
   );
 };
-
-export default Button;

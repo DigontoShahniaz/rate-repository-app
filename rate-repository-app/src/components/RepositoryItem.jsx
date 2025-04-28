@@ -1,13 +1,13 @@
-import { View, Image, StyleSheet } from 'react-native';
 
-import theme from '../theme';
+import React from 'react';
+import { View, Image, StyleSheet } from 'react-native';
 import Text from './Text';
-import formatInThousands from '../utils/formatThousands';
+import { formatNumber } from '../utils/formatNumber';
 
 const styles = StyleSheet.create({
   container: {
+    padding: 20,
     backgroundColor: 'white',
-    padding: 15,
   },
   topContainer: {
     flexDirection: 'row',
@@ -25,93 +25,60 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexShrink: 1,
   },
-  nameText: {
-    marginBottom: 5,
-  },
-  descriptionText: {
-    flexGrow: 1,
-  },
-  avatar: {
-    width: 45,
-    height: 45,
-    borderRadius: theme.roundness,
-  },
-  countItem: {
-    flexGrow: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 15,
-  },
-  countItemCount: {
-    marginBottom: 5,
-  },
   languageContainer: {
-    marginTop: 10,
+    marginTop: 5,
     flexDirection: 'row',
   },
   languageText: {
     color: 'white',
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.roundness,
-    flexGrow: 0,
+    backgroundColor: '#0366d6',
+    borderRadius: 4,
     paddingVertical: 3,
     paddingHorizontal: 6,
+  },
+  avatar: {
+    width: 45,
+    height: 45,
+    borderRadius: 4,
+  },
+  countItem: {
+    flexGrow: 0,
+    alignItems: 'center',
   },
 });
 
 const CountItem = ({ label, count }) => {
   return (
     <View style={styles.countItem}>
-      <Text style={styles.countItemCount} fontWeight="bold">
-        {formatInThousands(count)}
-      </Text>
+      <Text fontWeight="bold">{formatNumber(count)}</Text>
       <Text color="textSecondary">{label}</Text>
     </View>
   );
 };
 
-const RepositoryItem = ({ repository }) => {
-  const {
-    fullName,
-    description,
-    language,
-    forksCount,
-    stargazersCount,
-    ratingAverage,
-    reviewCount,
-    ownerAvatarUrl,
-  } = repository;
-
+const RepositoryItem = ({ item }) => {
   return (
-    <View style={styles.container}>
+    <View testID="repositoryItem" style={styles.container}>
       <View style={styles.topContainer}>
         <View style={styles.avatarContainer}>
-          <Image source={{ uri: ownerAvatarUrl }} style={styles.avatar} />
+          <Image
+            style={styles.avatar}
+            source={{ uri: item.ownerAvatarUrl }}
+          />
         </View>
         <View style={styles.contentContainer}>
-          <Text
-            style={styles.nameText}
-            fontWeight="bold"
-            fontSize="subheading"
-            numberOfLines={1}
-          >
-            {fullName}
-          </Text>
-          <Text style={styles.descriptionText} color="textSecondary">
-            {description}
-          </Text>
-          {language ? (
-            <View style={styles.languageContainer}>
-              <Text style={styles.languageText}>{language}</Text>
-            </View>
-          ) : null}
+          <Text fontWeight="bold">{item.fullName}</Text>
+          <Text color="textSecondary">{item.description}</Text>
+          <View style={styles.languageContainer}>
+            <Text style={styles.languageText}>{item.language}</Text>
+          </View>
         </View>
       </View>
       <View style={styles.bottomContainer}>
-        <CountItem count={stargazersCount} label="Stars" />
-        <CountItem count={forksCount} label="Forks" />
-        <CountItem count={reviewCount} label="Reviews" />
-        <CountItem count={ratingAverage} label="Rating" />
+        <CountItem label="Stars" count={item.stargazersCount} />
+        <CountItem label="Forks" count={item.forksCount} />
+        <CountItem label="Reviews" count={item.reviewCount} />
+        <CountItem label="Rating" count={item.ratingAverage} />
       </View>
     </View>
   );
